@@ -1,5 +1,9 @@
 #include <iostream>
 #include <fstream>
+#include <mysql_driver.h>
+#include <mysql_connection.h>
+#include <cppconn/resultset.h>
+#include <cppconn/statement.h>
 #include "files.h"
 
 bool userCheck(std::string, std::string);
@@ -9,7 +13,7 @@ void action();
 int main()
 {
     std::string username, password;
-
+    //checks if the login is correct and if not it restarts program
     begin();
     std::cin >> username >> password;
     if (!(userCheck(username, password)))
@@ -17,7 +21,33 @@ int main()
         std::cout << "ERROR: Invalid Username or Password\n";
         main();
     }
+    //creates the connection into the mysql database
+    sql::mysql::MySQL_Driver *driver;
+    sql::Connection *con;
+
+    //creates the driver object
+    driver = sql::mysql::get_mysql_driver_instance();
+    //creates the connection object
+    con = driver->connect("tcp://127.0.0.1:3306","root","password");//change to the appropriate address port, username, and password
+    con->setSchema("management");//change this to your database name
+    sql::Statement *stmt;
+    sql::ResultSet *res;
+    stmt = con->createStatement();
+    //test code to run to see if youre connected
+    // res = stmt->executeQuery("SELECT * FROM statements");
+
+        // while(res->next()){
+        //     int id = res->getInt("id");
+
+        //     std::cout << id << std::endl;
+        // }
+    
     action();
+
+    //cleans up the connections
+    delete res;
+    delete stmt;
+    delete con;
 
     return 0;
 }
