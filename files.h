@@ -1,5 +1,9 @@
 #ifndef FILES_H_
 #define FILES_H_
+#include <mysql_driver.h>
+#include <mysql_connection.h>
+#include <cppconn/resultset.h>
+#include <cppconn/statement.h>
 
 
 class files
@@ -17,7 +21,7 @@ public:
     }
     files(double, double, double);
     ~files(){}
-    double addEntry();
+    double addEntry(sql::ResultSet* resultSet, sql::Statement& statement);
     double modifyEntry();
     double deleteEntry();
     double totalIncome();
