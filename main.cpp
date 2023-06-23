@@ -8,7 +8,7 @@
 
 bool userCheck(std::string, std::string);
 void begin();
-void action();
+void action(sql::ResultSet *res, sql::Statement *stmt);
 
 int main()
 {
@@ -42,7 +42,7 @@ int main()
         //     std::cout << id << std::endl;
         // }
     
-    action();
+    action(res,stmt);
 
     //cleans up the connections
     delete res;
@@ -73,12 +73,25 @@ bool userCheck(std::string user, std::string pass)
     return false;
 }
 
-double files::addEntry()
+double files::addEntry(sql::ResultSet *res, sql::Statement &stmt)
 {
+    std::string input;
+    double deposit;
+    double overallAmount;
     std::cout << "Which would you like to do?\n"
               << "Deposit(1)\n"
               << "Withdraw(2)\n";
-              
+    std::cin >> input;
+        if(input == "1"){
+            std::cout << "How much would you like to deposit?\n";
+            std::cin >> deposit;
+            res = stmt.executeQuery("SELECT * FROM statements");
+            while(res->next()){
+            int id = res->getInt("id");
+
+            std::cout << id << std::endl;
+        }
+        }
 
 
     return 0;
@@ -108,7 +121,7 @@ double files::totalSavings()
     return 0;
 }
 
-void action()
+void action(sql::ResultSet *res, sql::Statement *stmt)
 {
     files obj;
     int input;
@@ -130,7 +143,7 @@ void action()
     }
     if (input == 1)
     {
-        obj.addEntry();
+        obj.addEntry(res,*stmt);
     }
     else if (input == 2)
     {
