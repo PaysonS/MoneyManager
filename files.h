@@ -21,7 +21,7 @@ public:
     }
     files(double, double, double);
     ~files(){}
-    double addEntry(sql::ResultSet* resultSet, sql::Statement& statement);
+    double addEntry( sql::Statement& statement, double total);
     double modifyEntry();
     double deleteEntry();
     double totalIncome();
