@@ -8,12 +8,13 @@
 
 bool userCheck(std::string, std::string);
 void begin();
-void action(sql::ResultSet *res, sql::Statement *stmt);
+void action(sql::Statement *stmt, double);
 
 int main()
 {
     std::string username, password;
-    //checks if the login is correct and if not it restarts program
+    double total;
+    // checks if the login is correct and if not it restarts program
     begin();
     std::cin >> username >> password;
     if (!(userCheck(username, password)))
@@ -21,31 +22,29 @@ int main()
         std::cout << "ERROR: Invalid Username or Password\n";
         main();
     }
-    //creates the connection into the mysql database
+    // creates the connection into the mysql database
     sql::mysql::MySQL_Driver *driver;
     sql::Connection *con;
 
-    //creates the driver object
+    // creates the driver object
     driver = sql::mysql::get_mysql_driver_instance();
-    //creates the connection object
-    con = driver->connect("tcp://127.0.0.1:3306","root","password");//change to the appropriate address port, username, and password
-    con->setSchema("management");//change this to your database name
+    // creates the connection object
+    con = driver->connect("tcp://127.0.0.1:3306", "root", "password"); // change to the appropriate address port, username, and password
+    con->setSchema("management");                                      // change this to your database name
     sql::Statement *stmt;
-    sql::ResultSet *res;
     stmt = con->createStatement();
-    //test code to run to see if youre connected
-    // res = stmt->executeQuery("SELECT * FROM statements");
+    // test code to run to see if youre connected
+    //  res = stmt->executeQuery("SELECT * FROM statements");
 
-        // while(res->next()){
-        //     int id = res->getInt("id");
+    // while(res->next()){
+    //     int id = res->getInt("id");
 
-        //     std::cout << id << std::endl;
-        // }
-    
-    action(res,stmt);
+    //     std::cout << id << std::endl;
+    // }
 
-    //cleans up the connections
-    delete res;
+    action(stmt, total);
+
+    // cleans up the connections
     delete stmt;
     delete con;
 
@@ -73,28 +72,35 @@ bool userCheck(std::string user, std::string pass)
     return false;
 }
 
-double files::addEntry(sql::ResultSet *res, sql::Statement &stmt)
+double files::addEntry(sql::Statement &stmt, double total)
 {
     std::string input;
+    std::string desc;
     double deposit;
-    double overallAmount;
+
     std::cout << "Which would you like to do?\n"
               << "Deposit(1)\n"
               << "Withdraw(2)\n";
     std::cin >> input;
-        if(input == "1"){
-            std::cout << "How much would you like to deposit?\n";
-            std::cin >> deposit;
-            res = stmt.executeQuery("SELECT * FROM statements");
-            while(res->next()){
-            int id = res->getInt("id");
-
-            std::cout << id << std::endl;
+    if (input == "1")
+    {
+        std::cout << "How much would you like to deposit?\n";
+        std::cin >> deposit;
+        std::cout << "Enter a description.\n";
+        std::cin >> desc;
+        total += deposit;
+        try
+        {
+            stmt.execute("INSERT INTO statements(description, withdrawals, deposits, balance) VALUES ('" + desc + "', 0.00, " + std::to_string(deposit) + ", " + std::to_string(total) + ")");
+            //  stmt.executeQuery("INSERT INTO statements(description, withdrawals, deposits, balance) VALUES (\"despr\", 0.00, 0.0,0.0)");
         }
+        catch (sql::SQLException &e)
+        {
+            std::cout << "SQL Exception caught: " << e.what() << std::endl;
         }
+    }
 
-
-    return 0;
+    return total;
 }
 double files::modifyEntry()
 {
@@ -121,7 +127,7 @@ double files::totalSavings()
     return 0;
 }
 
-void action(sql::ResultSet *res, sql::Statement *stmt)
+void action(sql::Statement *stmt, double total)
 {
     files obj;
     int input;
@@ -143,7 +149,7 @@ void action(sql::ResultSet *res, sql::Statement *stmt)
     }
     if (input == 1)
     {
-        obj.addEntry(res,*stmt);
+        obj.addEntry(*stmt, total);
     }
     else if (input == 2)
     {
