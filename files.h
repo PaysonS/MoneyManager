@@ -5,7 +5,6 @@
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 
-
 class files
 {
 private:
@@ -14,31 +13,19 @@ private:
     double savings;
 
 public:
-    files(){
+    files()
+    {
         income = 0.0;
         expenses = 0.0;
         savings = 0.0;
     }
     files(double, double, double);
-    ~files(){}
-    double addEntry( sql::Statement& statement, double total);
-    double modifyEntry();
-    double deleteEntry();
+    ~files() {}
+    double addEntry(sql::Statement &statement, double &total);
+    double deleteEntry(sql::Statement &statement, sql::ResultSet *res,double &total);
     double totalIncome();
     double totalExpenses();
     double totalSavings();
-
-
-
 };
-
-
-
-
-
-
-
-
-
 
 #endif
