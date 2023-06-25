@@ -8,11 +8,11 @@
 
 bool userCheck(std::string, std::string);
 void begin();
-void action(sql::Statement *stmt, double);
+void action(sql::Statement *stmt,sql::ResultSet*, double &);
 
 int main()
 {
-    std::string username, password;
+    std::string username, password, cont;
     double total;
     // checks if the login is correct and if not it restarts program
     begin();
@@ -32,6 +32,7 @@ int main()
     con = driver->connect("tcp://127.0.0.1:3306", "root", "password"); // change to the appropriate address port, username, and password
     con->setSchema("management");                                      // change this to your database name
     sql::Statement *stmt;
+    sql::ResultSet *res;
     stmt = con->createStatement();
     // test code to run to see if youre connected
     //  res = stmt->executeQuery("SELECT * FROM statements");
@@ -42,7 +43,13 @@ int main()
     //     std::cout << id << std::endl;
     // }
 
-    action(stmt, total);
+        do
+    {
+        action(stmt,res,total);
+        std::cout << total << std::endl;
+        std::cout << "Would you like to add more? (Y/N)\n";
+        std::cin >> cont;
+    } while (cont == "Y" || cont == "y");
 
     // cleans up the connections
     delete stmt;
@@ -72,11 +79,12 @@ bool userCheck(std::string user, std::string pass)
     return false;
 }
 
-double files::addEntry(sql::Statement &stmt, double total)
+double files::addEntry(sql::Statement &stmt, double &total)
 {
     std::string input;
     std::string desc;
     double deposit;
+    double withdrawal;
 
     std::cout << "Which would you like to do?\n"
               << "Deposit(1)\n"
@@ -92,24 +100,45 @@ double files::addEntry(sql::Statement &stmt, double total)
         try
         {
             stmt.execute("INSERT INTO statements(description, withdrawals, deposits, balance) VALUES ('" + desc + "', 0.00, " + std::to_string(deposit) + ", " + std::to_string(total) + ")");
-            //  stmt.executeQuery("INSERT INTO statements(description, withdrawals, deposits, balance) VALUES (\"despr\", 0.00, 0.0,0.0)");
         }
         catch (sql::SQLException &e)
         {
             std::cout << "SQL Exception caught: " << e.what() << std::endl;
         }
     }
+    else if (input == "2")
+    {
+        std::cout << "How much would you like to withdraw?\n";
+        std::cin >> withdrawal;
+        if (total <= withdrawal)
+        {
+            std::cout << "You dont have enough money to withdraw please try again.\n";
+            addEntry(stmt, total);
+        }
+        std::cout << "Enter a description.\n";
+        std::cin >> desc;
+        total -= withdrawal;
+        try
+        {
+            stmt.execute("INSERT INTO statements(description, withdrawals, deposits, balance) VALUES ('" + desc + "', " + std::to_string(withdrawal) + ", 0.00, " + std::to_string(total) + ")");
+        }
+        catch (sql::SQLException &e)
+        {
+            std::cout << "SQL Exception caught: " << e.what() << std::endl;
+        }
+    }
+    else
+    {
+        std::cout << "ERROR: Invalid Input\n";
+        addEntry(stmt, total);
+    }
 
     return total;
 }
-double files::modifyEntry()
-{
 
-    return 0;
-}
-double files::deleteEntry()
+double files::deleteEntry(sql::Statement &stmt,sql::ResultSet *res, double &total)
 {
-
+    
     return 0;
 }
 double files::totalIncome()
@@ -127,21 +156,21 @@ double files::totalSavings()
     return 0;
 }
 
-void action(sql::Statement *stmt, double total)
+void action(sql::Statement *stmt,sql::ResultSet *res, double &total)
 {
     files obj;
     int input;
     std::cout << "What action would you like to perform?\n"
               << "Add a transcation(1)\n"
-              << "Modify a transaction(2)\n"
-              << "Delete a transcation(3)\n"
-              << "See total Income(4)\n"
-              << "See total expenses(5)\n"
-              << "See total savings(6)\n";
+              << "Delete a transcation(2)\n"
+              << "See total Income(3)\n"
+              << "See total expenses(4)\n"
+              << "See total savings(5)\n";
     while (input < 1 || input > 6)
     {
         std::cout << "Please enter the corresponding number\n";
         std::cin >> input;
+
         if (input < 1 || input > 6)
         {
             std::cout << "Error: Invalid Entry Number\n";
@@ -149,25 +178,21 @@ void action(sql::Statement *stmt, double total)
     }
     if (input == 1)
     {
-        obj.addEntry(*stmt, total);
+        total = obj.addEntry(*stmt, total);
     }
     else if (input == 2)
     {
-        obj.modifyEntry();
+        obj.deleteEntry(*stmt, res, total);
     }
     else if (input == 3)
     {
-        obj.deleteEntry();
+        obj.totalIncome();
     }
     else if (input == 4)
     {
-        obj.totalIncome();
-    }
-    else if (input == 5)
-    {
         obj.totalExpenses();
     }
-    else if (input == 6)
+    else if (input == 5)
     {
         obj.totalSavings();
     }
