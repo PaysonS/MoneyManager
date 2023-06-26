@@ -21,11 +21,9 @@ public:
     }
     files(double, double, double);
     ~files() {}
-    double addEntry(sql::Statement &statement, double &total);
-    double deleteEntry(sql::Statement &statement, sql::ResultSet *res,double &total);
-    double totalIncome();
-    double totalExpenses();
-    double totalSavings();
+    void addEntry(sql::Statement &statement, sql::ResultSet *res);
+    void deleteEntry(sql::Statement &statement, sql::ResultSet *res);
+    double totalIncome(sql::Statement &statement, sql::ResultSet *res);
 };
 
 #endif
