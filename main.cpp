@@ -43,6 +43,7 @@ int main()
     //     std::cout << id << std::endl;
     // }
 
+    // gameplay loop
     do
     {
         action(stmt, res);
@@ -95,7 +96,7 @@ void files::addEntry(sql::Statement &stmt, sql::ResultSet *res) // double &total
         std::cin >> deposit;
         std::cout << "Enter a description.\n";
         std::cin >> desc;
-        // total += deposit;
+        // attempts to input the amount into the database and returns an error if fails
         try
         {
             stmt.execute("INSERT INTO statements(description, withdrawals, deposits) VALUES ('" + desc + "', 0.00, " + std::to_string(deposit) + ")");
@@ -116,7 +117,8 @@ void files::addEntry(sql::Statement &stmt, sql::ResultSet *res) // double &total
         }
         std::cout << "Enter a description.\n";
         std::cin >> desc;
-        // total -= withdrawal;
+
+        // inserts the withdrawal into the database and outputs an error if fails
         try
         {
             stmt.execute("INSERT INTO statements(description, withdrawals, deposits) VALUES ('" + desc + "', " + std::to_string(withdrawal) + ", 0.00)");
@@ -135,7 +137,7 @@ void files::addEntry(sql::Statement &stmt, sql::ResultSet *res) // double &total
 
 void files::deleteEntry(sql::Statement &stmt, sql::ResultSet *res)
 {
-
+    // removes the most recent entry from the database and outputs an error if fails
     try
     {
         stmt.execute("DELETE FROM statements WHERE id = (SELECT * FROM (SELECT MAX(id) FROM statements) AS temp)");
@@ -148,10 +150,11 @@ void files::deleteEntry(sql::Statement &stmt, sql::ResultSet *res)
 double files::totalIncome(sql::Statement &stmt, sql::ResultSet *res)
 {
     double total;
-
+    // gets all the values from the database and iterates through each entry
     res = stmt.executeQuery("SELECT * FROM statements");
     while (res->next())
     {
+        // adds up all the values in deposits and subtracts the total values from withdrawals
         total += res->getDouble("deposits") - res->getDouble("withdrawals");
     }
 
