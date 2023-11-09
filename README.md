@@ -10,10 +10,12 @@ Make sure you have the mysql C++ connector which can be done on linux by
 
 
 Log into MySql user (usually root)
+
     mysql -u root -p
     "password"
 
 Create your database
+
     CREATE DATABASE moneymanager
 
 Run the appropriate sql commands given in moneymanager.sql
@@ -25,4 +27,5 @@ To run the program on a command line use the following command
     ./a.out
 
 View contents of the statements table using 
+
     SELECT * FROM statements
